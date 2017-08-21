@@ -112,7 +112,7 @@
 
 <!-- other authors -->
 
-    <date month="October" year="2016"/>
+    <date month="August" year="2017"/>
 
     <!-- If the month and year are both specified and are the current ones,
          xml2rfc will fill in the current day for you. If only the current
@@ -150,12 +150,13 @@
 	5905</xref>.  As the number of Extension Fields grows there is an
 	increasing chance of a parsing ambiguity when deciding if the "next"
 	set of data is an Extension Field or a legacy MAC.  This proposal
-	defines two new Extension Fields to avoid this ambiguity.  One is
-	used to signifiy that it is the last Extension Field in the packet.
-	If present, any subsequent data MUST be considered to be a legacy
-	MAC.  The other allows one or more MACs to be encapsulated in an
-	Extension Field.  If all parties in an association support MAC-EF,
-	the use of a legacy MAC may be avoided.</t>
+	defines two new Extension Fields to avoid this ambiguity.  One,
+	LAST-EF, is used to signifiy that it is the last Extension Field in
+	the packet.  If the LAST-EF is present, any subsequent data MUST be
+	considered to be a legacy MAC.  The other, MAC-EF, allows one or
+	more MACs to be encapsulated in an Extension Field.  If all parties
+	in an association support MAC-EF, the use of a legacy MAC may be
+	avoided.</t>
     </abstract>
   </front>
 
@@ -169,12 +170,13 @@
         5905</xref>.  As the number of Extension Fields grows there is an
         increasing chance of a parsing ambiguity when deciding if the "next"
         set of data is an Extension Field or a legacy MAC.  This proposal
-        defines two new Extension Fields to avoid this ambiguity.  One is
-        used to signifiy that it is the last Extension Field in the packet.
-        If present, any subsequent data MUST be considered to be a legacy
-        MAC.  The other allows one or more MACs to be encapsulated in an
-        Extension Field.  If all parties in an association support MAC-EF,
-        the use of a legacy MAC may be avoided.</t>
+        defines two new Extension Fields to avoid this ambiguity.  One,
+        LAST-EF, is used to signifiy that it is the last Extension Field in
+        the packet.  If the LAST-EF is present, any subsequent data MUST be
+        considered to be a legacy MAC.  The other, MAC-EF, allows one or
+        more MACs to be encapsulated in an Extension Field.  If all parties
+        in an association support MAC-EF, the use of a legacy MAC may be
+        avoided.</t>
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -184,7 +186,7 @@
       </section>
     </section>
 
-    <section title="The Last Extension Field Extension Field">
+    <section title="The Last Extension Field Extension Field - LAST-EF">
       <t>Now that multiple extension fields are a possibility, additional
 	packet data could be either an Extension Field or a legacy MAC.
 	Having a means to indicate that there are no more Extension Fields
@@ -192,8 +194,8 @@
 	almost certainly a legacy MAC, is a valuable facility.
       </t>
 
-      <t><figure title="NTP Extension Field: Last Extension Field">
-          <artwork name="NTP Extension Field: Last Extension Field"><![CDATA[
+      <t><figure title="NTP Extension Field: Last Extension Field - LAST-EF">
+          <artwork name="NTP Extension Field: Last Extension Field - LAST-EF"><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +---------------+---------------+-------------------------------+ 
@@ -264,11 +266,11 @@
         </figure></t>
 
       <t>Field Type: TBD (Recommendation for IANA: 0x1003 (MAC-EF, MAC INCLUDED), 0x3003 (MAC-EF, MAC OPTIONAL, MAC INCLUDED))</t>
-      <t>Field Length: As needed</t>
+      <t>Field Length: As needed.</t>
       <t>Payload: As described.</t>
 
       <t>A Field Type of 0 and a Length of 0 means this extension field is a
-	CRYPTO-NAK, as defined by RFC5905.  Otherwise, a Field Type value of
+	crypto-NAK, as defined by RFC5905.  Otherwise, a Field Type value of
 	TBD (0x1003 is suggested) identifies this extension field as a MAC
 	Extension field.  The MAC Count is an unsigned 16-bit field, as is
 	each MAC length field.  If there are an even number of MACs
@@ -277,7 +279,7 @@
 	data is longword (4-octet) aligned.  Each MAC SHALL be padded so
 	that any subsequent MAC starts on a 4-octet boundary.</t>
 
-      <t>A MAC SHOULD not be present if there is a crypto-NAK present in the
+      <t>A MAC SHOULD NOT be present if there is a crypto-NAK present in the
 	packet.</t>
 
       <t>Each MAC within the extension field consists of a 32-bit key
@@ -311,7 +313,7 @@
     <section anchor="IANA" title="IANA Considerations">
       <t>This memo requests IANA to allocate NTP Extension Field Types:
 	<list>
-	  <t>0x0000 CRYPTO-NAK</t>
+	  <t>0x0000 crypto-NAK</t>
 	  <t>0x1003 MAC-EF, MAC INCLUDED</t>
 	  <t>0x3003 MAC-EF, MAC OPTIONAL, MAC INCLUDED</t>
 	  <t>0x0008 LAST-EF</t>
@@ -327,12 +329,14 @@
       <t>Digests MD5, DES and SHA-1 are considered compromised and should
 	not be used [COMP].</t>
 
-      <t>If possible each MAC length should be at least 68 octets long to
-	allow for 4 octets of key ID and at least 64 octets of digest and
-	random padding. This means that for SHA-256 digests there are 4
-	octets of key ID, 32 bytes digest and 32 random octets of padding.
-	Using larger minimum MAC lengths makes it difficult for an attacker
-	to know which digest algorithms are used.</t>
+      <t>[DISCUSS] Each MAC length should be at least 20 octets long to
+	allow for 4 octets of key ID and at least 16 octets of digest and
+	random padding.  For a 128-bit digest, there would be 4 octets of
+	key ID, 16 octets of digest, plus any desired octets of random
+	padding.  For SHA-256 digests there are 4 octets of key ID, 32
+	octets digest, plus any desired octets of random padding.  Using MAC
+	lengths that include random padding may make it more difficult for
+	an attacker to know which digest algorithms are used.</t>
     </section>
   </middle>
 
@@ -386,7 +390,7 @@
 
     <!-- Change Log
 
-v00 2016-10-29  HMS Initial Submission   
+v00 2017-08-20  HMS Initial Submission   
                                                                                         -->
   </back>
 </rfc>
