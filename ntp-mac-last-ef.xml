@@ -39,7 +39,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-stenn-ntp-mac-last-ef-01" ipr="trust200902">
+<rfc category="std" docName="draft-stenn-ntp-mac-last-ef-02" ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN" 
@@ -112,7 +112,7 @@
 
 <!-- other authors -->
 
-    <date month="August" year="2017"/>
+    <date month="November" year="2017"/>
 
     <!-- If the month and year are both specified and are the current ones,
          xml2rfc will fill in the current day for you. If only the current
@@ -173,10 +173,11 @@
         defines two new Extension Fields to avoid this ambiguity.  One,
         LAST-EF, is used to signifiy that it is the last Extension Field in
         the packet.  If the LAST-EF is present, any subsequent data MUST be
-        considered to be a legacy MAC.  The other, MAC-EF, allows one or
-        more MACs to be encapsulated in an Extension Field.  If all parties
-        in an association support MAC-EF, the use of a legacy MAC may be
-        avoided.</t>
+        considered to be a legacy MAC, or if you prefer, any subsequent
+        datat MUST NOT be considered to be an EF.  The other, MAC-EF, allows
+        one or more MACs to be encapsulated in an Extension Field.  If all
+        parties in an association support MAC-EF, the use of a legacy MAC
+        may be avoided.</t>
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -270,14 +271,15 @@
       <t>Payload: As described.</t>
 
       <t>A Field Type of 0 and a Length of 0 means this extension field is a
-	crypto-NAK, as defined by RFC5905.  Otherwise, a Field Type value of
-	TBD (0x1003 is suggested) identifies this extension field as a MAC
-	Extension field.  The MAC Count is an unsigned 16-bit field, as is
-	each MAC length field.  If there are an even number of MACs
-	specified there is an unused 16-bit field which SHOULD be 0x0000 at
-	the end of the set of MAC length values so that the subsequent MAC
-	data is longword (4-octet) aligned.  Each MAC SHALL be padded so
-	that any subsequent MAC starts on a 4-octet boundary.</t>
+	crypto-NAK, as defined by <xref target="RFC5905">RFC5905</xref>.
+	Otherwise, a Field Type value of TBD (0x1003 is suggested)
+	identifies this extension field as a MAC Extension field.  The MAC
+	Count is an unsigned 16-bit field, as is each MAC length field.  If
+	there are an even number of MACs specified there is an unused 16-bit
+	field which SHOULD be 0x0000 at the end of the set of MAC length
+	values so that the subsequent MAC data is longword (4-octet)
+	aligned.  Each MAC SHALL be padded so that any subsequent MAC starts
+	on a 4-octet boundary.</t>
 
       <t>A MAC SHOULD NOT be present if there is a crypto-NAK present in the
 	packet.</t>
@@ -324,7 +326,8 @@
     <section anchor="Security" title="Security Considerations">
       <t>The security considerations of time protocols in general are
 	discussed in <xref target="RFC7384">RFC7384</xref>, and the security
-	considerations of NTP are discussed in [RFC5905].</t>
+	considerations of NTP are discussed
+	in <xref target="RFC5905">RFC5905</xref>.</t>
 
       <t>Digests MD5, DES and SHA-1 are considered compromised and should
 	not be used [COMP].</t>
