@@ -112,7 +112,7 @@
 
 <!-- other authors -->
 
-    <date month="November" year="2017"/>
+    <date year="2018"/>
 
     <!-- If the month and year are both specified and are the current ones,
          xml2rfc will fill in the current day for you. If only the current
@@ -204,7 +204,7 @@
 +-------------------------------+-------------------------------+]]></artwork>
         </figure></t>
 
-      <t>Field Type: TBD (Recommendation for IANA: 0x2008 (Last Extension Field, MAC OPTIONAL))</t>
+      <t>Field Type: TBD (Recommendation for IANA: 0x0008 (Last Extension Field))</t>
       <t>Field Length: 4</t>
       <t>Payload: None.</t>
       <t>Example:
@@ -215,7 +215,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +---------------+---------------+-------------------------------+ 
-|     Field Type (0x2008)       |    Field Length (0x0004)      |
+|     Field Type (0x0008)       |    Field Length (0x0004)      |
 +-------------------------------+-------------------------------+
 |                          MAC Key ID                           |
 +-------------------------------+-------------------------------+
@@ -239,8 +239,31 @@
 	in broadcast scenarios, for example.
       </t>
 
-      <t><figure title="NTP Extension Field: MAC EF Format">
-          <artwork name="NTP Extension Field: MAC EF Format"><![CDATA[
+      <t>There are two forms of this extension field.  The first
+      supports a single MAC, requiring 4 octets' overhead for the EF
+      header.  The second form supports one or more MACs in the EF
+      payload, and requires at least 8 octets.
+      </t>
+
+      <t><figure title="NTP Extension Field: MAC EF Format (Single MAC)">
+          <artwork name="NTP Extension Field: MAC EF Format (Single MAC)"><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++---------------+---------------+-------------------------------+ 
+|          Field Type           |        Field Length           |
++-------------------------------+-------------------------------+
+.                         MAC 1 Key ID                          .
+.                                       +-+-+-+-+-+-+-+-+-+-+-+-.
+.         MAC 1 Key Data                | Random Data Padding   .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+]]></artwork>
+        </figure></t>
+
+      <t>Field Type: TBD (Recommendation for IANA: 0x0003 (MAC-EF)</t>
+      <t>Field Length: As needed.</t>
+      <t>Payload: As described.</t>
+
+      <t><figure title="NTP Extension Field: MAC EF Format (1 or more MACs)">
+          <artwork name="NTP Extension Field: MAC EF Format (1 or more MACs)"><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +---------------+---------------+-------------------------------+ 
@@ -266,23 +289,31 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+]]></artwork>
         </figure></t>
 
-      <t>Field Type: TBD (Recommendation for IANA: 0x1003 (MAC-EF, MAC INCLUDED), 0x3003 (MAC-EF, MAC OPTIONAL, MAC INCLUDED))</t>
+      <t>Field Type: TBD (Recommendation for IANA: 0x0103 (MAC-EF)</t>
       <t>Field Length: As needed.</t>
       <t>Payload: As described.</t>
 
-      <t>A Field Type of 0 and a Length of 0 means this extension field is a
-	crypto-NAK, as defined by <xref target="RFC5905">RFC5905</xref>.
-	Otherwise, a Field Type value of TBD (0x1003 is suggested)
-	identifies this extension field as a MAC Extension field.  The MAC
-	Count is an unsigned 16-bit field, as is each MAC length field.  If
-	there are an even number of MACs specified there is an unused 16-bit
-	field which SHOULD be 0x0000 at the end of the set of MAC length
-	values so that the subsequent MAC data is longword (4-octet)
-	aligned.  Each MAC SHALL be padded so that any subsequent MAC starts
-	on a 4-octet boundary.</t>
+      <t>A Field Type value of TBD (0x0003 is suggested)
+      identifies this extension field as a MAC Extension field for a
+      single MAC.
+      </t>
 
-      <t>A MAC SHOULD NOT be present if there is a crypto-NAK present in the
-	packet.</t>
+      <t>A Field Type value of TBD (0x0103 is suggested) identifies
+      this extension field as a MAC extension field for one or more
+      MACs.  In this case, the MAC Count is an unsigned 16-bit field,
+      as is each MAC length field.  If there are an even number of
+      MACs specified there is an unused 16-bit field which SHOULD be
+      0x0000 at the end of the set of MAC length values so that the
+      subsequent MAC data is longword (4-octet) aligned.  Each MAC
+      SHALL be padded so that any subsequent MAC starts on a 4-octet
+      boundary.</t>
+
+      <t>A MAC consisting of 4 octets of zeros means the MAC is a
+      crypto-NAK, as defined by <xref
+      target="RFC5905">RFC5905</xref>.</t>
+
+      <t>Additional MACs SHOULD NOT be present if there is a
+      crypto-NAK present in the packet.</t>
 
       <t>Each MAC within the extension field consists of a 32-bit key
 	identifier which SHOULD be unique to the set of key identifiers in
@@ -307,7 +338,9 @@
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>MAC-EF: The authors gratefully acknowledge Dave Mills for his
-      insightful comments.</t>
+      insightful comments.  Hal Murray asked if there was a way for
+      the MAC-EF to require only 4 octets of overhead if there was
+      only a single MAC in the payload.</t>
     </section>
 
     <!-- Possibly a 'Contributors' section ... -->
@@ -315,12 +348,10 @@
     <section anchor="IANA" title="IANA Considerations">
       <t>This memo requests IANA to allocate NTP Extension Field Types:
 	<list>
-	  <t>0x0000 crypto-NAK</t>
-	  <t>0x1003 MAC-EF, MAC INCLUDED</t>
-	  <t>0x3003 MAC-EF, MAC OPTIONAL, MAC INCLUDED</t>
+	  <t>0x0003 MAC-EF (Single MAC)</t>
+	  <t>0x0103 MAC-EF (1 or more MACs)</t>
 	  <t>0x0008 LAST-EF</t>
-	  <t>0x2008 LAST-EF, MAC OPTIONAL</t>
-	  </list></t>
+        </list></t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
