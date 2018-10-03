@@ -250,7 +250,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +---------------+---------------+-------------------------------+ 
-|          Field Type           |        Field Length           |
+|     Field Type (0x0003)       |        Field Length           |
 +-------------------------------+-------------------------------+
 .                         MAC 1 Key ID                          .
 .                                       +-+-+-+-+-+-+-+-+-+-+-+-.
@@ -258,7 +258,7 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+]]></artwork>
         </figure></t>
 
-      <t>Field Type: TBD (Recommendation for IANA: 0x0003 (MAC-EF)</t>
+      <t>Field Type: TBD (Recommendation for IANA: 0x0003 (MAC-EF: Single MAC))</t>
       <t>Field Length: As needed.</t>
       <t>Payload: As described.</t>
 
@@ -267,7 +267,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +---------------+---------------+-------------------------------+ 
-|          Field Type           |        Field Length           |
+|     Field Type (0x0103)       |        Field Length           |
 +-------------------------------+-------------------------------+
 |          MAC Count            |        MAC 1 Length           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -289,7 +289,7 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+]]></artwork>
         </figure></t>
 
-      <t>Field Type: TBD (Recommendation for IANA: 0x0103 (MAC-EF)</t>
+      <t>Field Type: TBD (Recommendation for IANA: 0x0103 (MAC-EF: 1 or more MACs))</t>
       <t>Field Length: As needed.</t>
       <t>Payload: As described.</t>
 
