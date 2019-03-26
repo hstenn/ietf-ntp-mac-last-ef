@@ -1,4 +1,4 @@
-# ntp-bcp
+# ntp-mac-last-ef
 Working Directory for IETF NTP MAC-EF and "Last Extension" proposal
 
 If you want to see how the document looks when submitted to xml2rfc.tools.ietf.org, just click this link:

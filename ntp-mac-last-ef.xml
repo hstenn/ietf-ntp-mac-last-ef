@@ -7,6 +7,7 @@
      An alternate method (rfc include) is described in the references. -->
 <!ENTITY RFC1305 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.1305.xml">
 <!ENTITY RFC5905 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5905.xml">
+<!ENTITY RFC7822 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7822.xml">
 <!ENTITY RFC7384 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7384.xml">
 <!ENTITY RFC2827 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2827.xml">
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
@@ -39,7 +40,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-stenn-ntp-mac-last-ef-03" ipr="trust200902">
+<rfc category="std" docName="draft-stenn-ntp-mac-last-ef-04" ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN" 
@@ -112,7 +113,7 @@
 
 <!-- other authors -->
 
-    <date year="2018"/>
+    <date year="2019"/>
 
     <!-- If the month and year are both specified and are the current ones,
          xml2rfc will fill in the current day for you. If only the current
@@ -142,42 +143,52 @@
          keywords will be used for the search engine. -->
 
     <abstract>
-      <t>NTPv4 is defined by <xref target="RFC5905">RFC 5905</xref>, and it
-	and earlier versions of the NTP Protocol have supported symmetric
-	private key Message Authentication Code (MAC) authentication.  MACs
-	were first described in Appendix C of <xref target="RFC1305">RFC
-	1305</xref> and are further described in <xref target="RFC5905">RFC
-	5905</xref>.  As the number of Extension Fields grows there is an
-	increasing chance of a parsing ambiguity when deciding if the "next"
-	set of data is an Extension Field or a legacy MAC.  This proposal
-	defines two new Extension Fields to avoid this ambiguity.  One,
-	LAST-EF, is used to signify that it is the last Extension Field in
-	the packet.  If the LAST-EF is present, any subsequent data MUST be
-	considered to be a legacy MAC.  The other, MAC-EF, allows one or
-	more MACs to be encapsulated in an Extension Field.  If all parties
-	in an association support MAC-EF, the use of a legacy MAC may be
-	avoided.</t>
+      <t>
+	NTP packets can be authenticated by a Message Authentication
+	Code (MAC) if a MAC is present at the end of an NTP packet.
+	The legacy format for this MAC is not formatted as an NTP
+	Extension Field, and its presence may cause some
+	implementations a parsing ambiguity.
+      </t>
+
+      <t>
+	This proposal introduces two ways to resolve this problem.
+	One is to provide a MAC Extension Field.  The other is an
+	extension field that unambiguously declares itself to be the
+	last extension field in an NTP packet (so any additional data
+	MUST be a legacy MAC).
+      </t>
+      
+      <t>RFC EDITOR: PLEASE REMOVE THE FOLLOWING PARAGRAPH BEFORE PUBLISHING:</t>
+      <t>
+	The source code and issues list for this draft can be found in
+	https://github.com/hstenn/ietf-ntp-mac-last-ef
+      </t>
     </abstract>
   </front>
 
   <middle>
     <section title="Introduction">
-      <t>NTPv4 is defined by <xref target="RFC5905">RFC 5905</xref>, and it
-        and earlier versions of the NTP Protocol have supported symmetric
-        private key Message Authentication Code (MAC) authentication.  MACs
-        were first described in Appendix C of <xref target="RFC1305">RFC
-        1305</xref> and are further described in <xref target="RFC5905">RFC
-        5905</xref>.  As the number of Extension Fields grows there is an
-        increasing chance of a parsing ambiguity when deciding if the "next"
-        set of data is an Extension Field or a legacy MAC.  This proposal
-        defines two new Extension Fields to avoid this ambiguity.  One,
-        LAST-EF, is used to signify that it is the last Extension Field in
-        the packet.  If the LAST-EF is present, any subsequent data MUST be
-        considered to be a legacy MAC, or if you prefer, any subsequent
-        data MUST NOT be considered to be an EF.  The other, MAC-EF, allows
-        one or more MACs to be encapsulated in an Extension Field.  If all
-        parties in an association support MAC-EF, the use of a legacy MAC
-        may be avoided.</t>
+      <t>
+	NTPv4 is defined by <xref target="RFC5905">RFC 5905</xref>,
+	and it and earlier versions of the NTP Protocol have supported
+	symmetric private key Message Authentication Code (MAC)
+	authentication.  MACs were first described in Appendix C of
+	<xref target="RFC1305">RFC 1305</xref> and are further
+	described in <xref target="RFC5905">RFC 5905</xref>.  As the
+	number of Extension Fields grows there is an increasing chance
+	some implementations will find a parsing ambiguity when
+	deciding if the "next" set of data is an Extension Field or a
+	legacy MAC.  This proposal defines two new Extension Fields to
+	avoid this potential ambiguity.  One, LAST-EF, is used to
+	signify that it is the last Extension Field in the packet.  If
+	the LAST-EF is present, any subsequent data MUST be considered
+	to be a legacy MAC, or if you prefer, any subsequent data MUST
+	NOT be considered to be an EF.  The other, MAC-EF, allows one
+	or more MACs to be encapsulated in an Extension Field.  If all
+	parties in an association support MAC-EF, the use of a legacy
+	MAC may be avoided.
+      </t>
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -188,11 +199,26 @@
     </section>
 
     <section title="The Last Extension Field Extension Field - LAST-EF">
-      <t>Now that multiple extension fields are a possibility, additional
-	packet data could be either an Extension Field or a legacy MAC.
-	Having a means to indicate that there are no more Extension Fields
-	in an NTP packet and any subsequent data MUST be something else,
-	almost certainly a legacy MAC, is a valuable facility.
+      <t>
+	Now that multiple extension fields are a possibility,
+	additional packet data could be either an Extension Field or a
+	legacy MAC.  Having a means to indicate that there are no more
+	Extension Fields in an NTP packet and any subsequent data MUST
+	be something else, almost certainly a legacy MAC, is a
+	valuable facility.
+      </t>
+
+      <t>
+	The format of a LAST-EF is an Extension Field comprised of an
+	identified Field Type and an appropriate Field Length.
+      </t>
+
+      <t>
+	In the example below the Field Length in the LAST-EF is 4,
+	because there is clearly no need in this case for the 28
+	octets required by <xref target="RFC7822">RFC 7822</xref>.
+	But the LAST-EF could have any supported length, as any
+	payload is ignored.
       </t>
 
       <t><figure title="NTP Extension Field: Last Extension Field - LAST-EF">
@@ -205,8 +231,8 @@
         </figure></t>
 
       <t>Field Type: TBD (Recommendation for IANA: 0x0008 (Last Extension Field))</t>
-      <t>Field Length: 4</t>
-      <t>Payload: None.</t>
+      <t>Field Length: 4 (minimum)</t>
+      <t>Payload: Ignored if present - none needed.  SHOULD be zeroes.</t>
       <t>Example:
 	<figure title="Example: NTP Extension Field: Last Extension Field,
 		       followed by a Legacy MAC">
@@ -231,18 +257,48 @@
     </section>
 
     <section title="MAC Extension Field">
-      <t>Now that multiple extension fields are a possibility, there is a
-	chance that additional packet data could be either an Extension
-	Field or a legacy MAC.  There is benefit to encapsulating the MAC in
-	an extension field.  By encapsulating the MAC in an EF, we also have
-	the option to include multiple MACs in a packet, which may be of use
-	in broadcast scenarios, for example.
+      <t>
+	Now that multiple extension fields are a possibility, there is
+	a chance that additional packet data could be either an
+	Extension Field or a legacy MAC.  There is benefit to
+	encapsulating the MAC in an extension field.  By encapsulating
+	the MAC in an EF, we also have the option to include multiple
+	MACs in a packet, which may be of use in broadcast scenarios,
+	for example.
       </t>
 
-      <t>There are two forms of this extension field.  The first
-      supports a single MAC, requiring 4 octets' overhead for the EF
-      header.  The second form supports one or more MACs in the EF
-      payload, and requires at least 8 octets.
+      <t>
+	There are two forms of this extension field.  The first
+	supports a single MAC, requiring 4 octets' overhead for the EF
+	header.  The second form supports one or more MACs in the EF
+	payload, and requires at least 8 octets.
+      </t>
+
+      <t>
+	The format of a MAC-EF is an Extension Field comprised of an
+	identified Field Type and an appropriate Field Length.
+      </t>
+
+      <t>
+	A Field Type value of TBD (0x0003 is suggested) identifies
+	this extension field as a MAC Extension field for a single
+	MAC.
+	In this case, the payload consists of the four octet
+	MAC Key ID followed by the MAC digest, and any desired
+	(possibly random data) padding.
+      </t>
+
+      <t>
+	A Field Type value of TBD (0x0103 is suggested) identifies
+	this extension field as a MAC extension field for one or more
+	MACs.  In this case, the payload consists of an unsigned
+	16-bit MAC Count (N) followed by N unsigned 16-bit MAC length
+	fields.  If there are an even number of MACs specified there
+	is an unused 16-bit field which SHOULD be 0x0000 at the end of
+	the set of MAC length values so that the subsequent MAC data
+	is longword (4-octet) aligned.  Each MAC SHALL be padded so
+	that any subsequent MAC starts on a 4-octet boundary.
+	Optional (possibly random data) padding is allowed.
       </t>
 
       <t><figure title="NTP Extension Field: MAC EF Format (Single MAC)">
@@ -293,54 +349,49 @@
       <t>Field Length: As needed.</t>
       <t>Payload: As described.</t>
 
-      <t>A Field Type value of TBD (0x0003 is suggested)
-      identifies this extension field as a MAC Extension field for a
-      single MAC.
+      <t>
+	A MAC consisting of 4 octets of zeros means the MAC is a
+	crypto-NAK, as defined by <xref
+	target="RFC5905">RFC5905</xref>.
       </t>
 
-      <t>A Field Type value of TBD (0x0103 is suggested) identifies
-      this extension field as a MAC extension field for one or more
-      MACs.  In this case, the MAC Count is an unsigned 16-bit field,
-      as is each MAC length field.  If there are an even number of
-      MACs specified there is an unused 16-bit field which SHOULD be
-      0x0000 at the end of the set of MAC length values so that the
-      subsequent MAC data is longword (4-octet) aligned.  Each MAC
-      SHALL be padded so that any subsequent MAC starts on a 4-octet
-      boundary.</t>
+      <t>
+	Additional MACs SHOULD NOT be present if there is a crypto-NAK
+	present in the packet.
+      </t>
 
-      <t>A MAC consisting of 4 octets of zeros means the MAC is a
-      crypto-NAK, as defined by <xref
-      target="RFC5905">RFC5905</xref>.</t>
-
-      <t>Additional MACs SHOULD NOT be present if there is a
-      crypto-NAK present in the packet.</t>
-
-      <t>Each MAC within the extension field consists of a 32-bit key
-	identifier which SHOULD be unique to the set of key identifiers in
-	this MAC extension field followed by ((MAC Length) - 4) octets of
-	data, optionally followed by random octets to pad the key data to
-	the length specified earlier in the extension field.  That key
-	identifier is a shared secret which defines the algorithm to be used
-	and a cookie or secret to be used in generating the digest.  The MAC
-	digest is produced by hashing the data from the beginning of the NTP
-	packet up to but not including the start of the MAC extension field.
-	The calculation of the digest SHOULD be a hash of this data
-	concatenated with the 32-bit keyid (in network-order), and the key.
-	When sending or receiving a key identifier each side needs to agree
-	on the key identifier, algorithm and the cookie or secret used to
-	produce the digest along with the digest lengths.  Note that the
-	sender may send more bytes than are required by the digest
-	algorithm.  This would be done to make it more difficult for a
-	casual observer to identify the algorithm being used based on the
-	length of the data.  The digest data begins immediately after the
-	key ID, and any padding octets SHOULD be random.</t>
+      <t>
+	Each MAC within the extension field consists of a 32-bit key
+	identifier which SHOULD be unique to the set of key
+	identifiers in this MAC extension field followed by ((MAC
+	Length) - 4) octets of data, optionally followed by random
+	octets to pad the key data to the length specified earlier in
+	the extension field.  That key identifier is a shared secret
+	which defines the algorithm to be used and a cookie or secret
+	to be used in generating the digest.  The MAC digest is
+	produced by hashing the data from the beginning of the NTP
+	packet up to but not including the start of the MAC extension
+	field.  The calculation of the digest SHOULD be a hash of this
+	data concatenated with the 32-bit keyid (in network-order),
+	and the key.  When sending or receiving a key identifier each
+	side needs to agree on the key identifier, algorithm and the
+	cookie or secret used to produce the digest along with the
+	digest lengths.  Note that the sender may send more bytes than
+	are required by the digest algorithm.  This would be done to
+	make it more difficult for a casual observer to identify the
+	algorithm being used based on the length of the data.  The
+	digest data begins immediately after the key ID, and any
+	padding octets SHOULD be random.
+      </t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>MAC-EF: The authors gratefully acknowledge Dave Mills for his
-      insightful comments.  Hal Murray asked if there was a way for
-      the MAC-EF to require only 4 octets of overhead if there was
-      only a single MAC in the payload.</t>
+      <t>
+	MAC-EF: The authors gratefully acknowledge Dave Mills for his
+	insightful comments.  Hal Murray asked if there was a way for
+	the MAC-EF to require only 4 octets of overhead if there was
+	only a single MAC in the payload.
+      </t>
     </section>
 
     <!-- Possibly a 'Contributors' section ... -->
@@ -355,22 +406,29 @@
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>The security considerations of time protocols in general are
-	discussed in <xref target="RFC7384">RFC7384</xref>, and the security
-	considerations of NTP are discussed
-	in <xref target="RFC5905">RFC5905</xref>.</t>
+      <t>
+	The security considerations of time protocols in general are
+	discussed in <xref target="RFC7384">RFC7384</xref>, and the
+	security considerations of NTP are discussed in <xref
+	target="RFC5905">RFC5905</xref>.
+      </t>
 
-      <t>Digests MD5, DES and SHA-1 are considered compromised and should
-	not be used [COMP].</t>
+      <t>
+	Digests MD5, DES and SHA-1 are considered compromised and
+	should not be used [COMP].
+      </t>
 
-      <t>[DISCUSS] Each MAC length should be at least 20 octets long to
-	allow for 4 octets of key ID and at least 16 octets of digest and
-	random padding.  For a 128-bit digest, there would be 4 octets of
-	key ID, 16 octets of digest, plus any desired octets of random
-	padding.  For SHA-256 digests there are 4 octets of key ID, 32
-	octets digest, plus any desired octets of random padding.  Using MAC
-	lengths that include random padding may make it more difficult for
-	an attacker to know which digest algorithms are used.</t>
+      <t>
+	[DISCUSS] Each MAC length should be at least 20 octets long to
+	allow for 4 octets of key ID and at least 16 octets of digest
+	and random padding.  For a 128-bit digest, there would be 4
+	octets of key ID, 16 octets of digest, plus any desired octets
+	of random padding.  For SHA-256 digests there are 4 octets of
+	key ID, 32 octets digest, plus any desired octets of random
+	padding.  Using MAC lengths that include random padding may
+	make it more difficult for an attacker to know which digest
+	algorithms are used.
+      </t>
     </section>
   </middle>
 
@@ -402,11 +460,15 @@
       &RFC5905;
 
       &RFC7384;
+
+      &RFC7822;
     </references>
 
     <!-- Here we use entities that we defined at the beginning. -->
 
     <!-- SW: Except that we're not really using these...
+
+	HMS: We could and possibly should reference at least I-DO.
 
     <references title="Informative References">
       &RFC3552;
